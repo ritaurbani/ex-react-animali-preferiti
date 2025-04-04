@@ -5,42 +5,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>I miei animali preferiti</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
     <script type="text/babel">
         const { useState } = React;
+        const { createPortal } = ReactDOM
+        //3.Aggiungo componente Modale 
+        function Modal({
+            title,
+            content,
+            show = false,
+            onClose = () => { },
+            onConfirm = () => { }
+        }) {
+            return show && createPortal(
+                <div className="modal-container">
+                    <div className="modal">
+                        <h2>{title}</h2>
+                        <p>{content}</p>
+                        <button onClick={onClose}>Annulla</button>
+                        <button onClick={onConfirm}>Conferma</button>
+                    </div>
+                </div>,
+                document.body
+            )
+        }
+
         //1. dopo links e babel creiamo componente da montare
         const ListaAnimali = () => {
             const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"];
             const [animals, setAnimals] = useState([])
 
             const addAnimals = () => {
-                
-                animalsChoices.forEach((animal)=> {
-                    animals.push(animal)
-                    return animals
-                })
-              return setAnimals(animals)
+                const casualAnimaIndex = Math.floor(Math.random() * animalsChoices.length)
+                const casualAnimal = animalsChoices[casualAnimaIndex]
+                setAnimals([...animals, casualAnimal])
+                // setAnimals(curr =>[...curr,casualAnimal])
             }
-            // const [show, setShow] = useState(true)
             return (
-                <>
-                <button onClick={addAnimals}>Aggiungi Animale</button>
-                <details>
-                    <summary>
-                        Animali
-                    </summary>
-                    <div>
-                        <button onClick={() => { setShow(true) }}></button>
-                        <ul>
-                            {animals.map((animal, index) => (
-                                <li key={index}>{animal}</li>
-                            ))}
-                        </ul>
-                    </div>
-                </details>
-                </>
+                < div>
+                    <button onClick={addAnimals}>Aggiungi Animale</button>
+                    <details>
+                        <summary>
+                            Animali
+                        </summary>
+                        <div>
+                            <button onClick={() => { setShow(true) }}></button>
+                            <ul>
+                                {animals.map((animal, index) => (
+                                    <li key={index}>{animal}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    </details>
+                </div>
             )
         }
     </script>
