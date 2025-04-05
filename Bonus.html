@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I miei animali preferiti</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+    <script type="text/babel">
+        const { useState } = React;//destrutturo useState da oggetto react
+        const { createPortal } = ReactDOM
+        //3.Aggiungo componente Modale 
+        function Modal({
+            title,
+            content,//puo essere usata per passare un componente qualsiasi, mettere children o altri elems
+            show = false,
+            onClose = () => { },
+            onConfirm = () => { }
+        }) {
+            return show && createPortal(
+                <div className="modal-container">
+                    <div className="modal">
+                        <h2>{title}</h2>
+                        {content}
+                        <div>
+                            <button onClick={onClose}>Annulla</button>
+                            <button onClick={onConfirm}>Conferma</button>
+                        </div>
+                    </div>
+                </div>,
+                document.body//abbiamo creato portal che passiamo al body-posizionamento modale sara al di sopra
+            )
+        }
+
+        //    1. dopo links e babel creiamo componente da montare
+        const ListaAnimali = () => {
+            let url = "https://boolean-spec-frontend.vercel.app/freetestapi"
+            const animalsChoices = ["Cane", "Gatto", "Pappagallo", "Cavallo", "Panda"];
+            const [animals, setAnimals] = useState([])
+            //questo state gestisce quando e aperta o chiusa
+            const [show, setShow] = useState(false)
+            const [animalName, setAnimalName] = useState("")
+            const [isLoading, setIsLoading] = useState(false)
+            const [errorMessage, setErrorMessage] = useState("")
+
+            //effettuare una ricerca dell'animale basata sul contenuto dell'input: 
+            const addAnimals = async () => {
+                if (!animalName.trim()) return;
+                //vediamo se stiamo facendo effettivamente load del risultato durante la chiamata
+                setIsLoading(true);
+                //all inizio di ricerca non c e msg errore
+                setErrorMessage('')
+
+                try {//qui in resp otteniamo risultato chiamata - inseriamo string inserita da utente
+                    //se manometto link altro tipo di errore
+                    const response = await fetch(`https://boolean-spec-frontend.vercel.app/freetestapi/animals?search=${animalName}`)
+                    //await aspetta che arrivi la risposta dal server.
+                    //Facciamo destructuring ([animalData]) per prendere il primo animale (array[0]).
+                    //const numeri = [10, 20, 30];const [primoNumero] = numeri;const [primoNumero, secondoNumero] = numeri;
+                    const [animalData] = await response.json()
+                    //questa chiamata ci restituira un array, se vogliamo prendere l animale, questo sara all inizio 0 dell array
+                    if (!animalData) {
+                        throw new Error("Nessun animale non trovato")
+                    }
+                    console.log(animalData)
+                    //creiamo un oggetto dai risultati ottenuti
+                    const animal = {
+                        name: animalData.name || "non trovato",
+                        description: animalData.description || "non trovato",
+                        image: animalData.image || null
+                    }
+                    setAnimals(curr => [...curr, animal])
+
+                } catch (err) {
+                    console.error(err)
+                    const message = err.message === "Nessun animale trovato" ? "Nessun animale trovato" : "Errore durante la ricerca dell animale"
+                    setErrorMessage(message)
+                } finally {
+                    setIsLoading(false)
+                    //svuoto input
+                    setAnimalName("")
+                    setShow(false)
+                }
+            }
+            return (
+                < div>
+                    <button onClick={() => { setShow(true) }}>Aggiungi Animale</button>
+                    <details>
+                        <summary>
+                            Animali
+                        </summary>
+
+                            <div>
+                                {errorMessage && <p style={{color: 'red'}}>{errorMessage}</p>}
+                                {animals.map((animal, index) => (
+                                    <div key={index} className="card">
+                                        <div>
+                                            <h3>{animal.name}</h3>
+                                            <p>{animal.description}</p>
+                                        </div>
+                                        {animal.image &&
+                                            <figure>
+                                                <img src={animal.image} alt="" />
+                                            </figure>
+                                        }
+                                    </div>
+                                ))}
+                            </div>
+
+                    </details>
+                    <Modal
+                        show={show}
+                        onClose={() => { setShow(false) }}
+                        onConfirm={addAnimals}
+                        title="Aggiungi Animali"
+                        content={
+                            
+                                <input
+                                    type="text"
+                                    required
+                                    placeholder="Nome Animale"
+                                    value={animalName}//con value useState
+                                    onChange={(e) => { setAnimalName(e.target.value) }} />
+
+                                // {isLoading && <p style={{ color: "red" }}>Caricando il risultato...</p>}
+                            
+                        }
+                    />
+                </div>
+            )
+        }
+    </script>
+
+    <!-- 2. per far vedere il componente creato a schermo creo altro script per montare componente - li divido per maggiore chiarezza, 
+     qui raccogliamo createroot e lo uso sull elemento html che scelgo-->
+    <!-- Dico a React prendi il componente che ho creato e 
+      renderizzmelo dentro l elemento html che ha come classe... -->
+    <script type="text/babel">
+        const { createRoot } = ReactDOM;
+        // raccolgo elemento che ha come classe lista animali; elemeto scelto per montare componente
+        const listaAnimali = document.querySelector(".lista-animali")
+        // quello che createroot ci ritorna lo salviamo nella variabile root
+        //dentro ci passiamo l elemento su cui vogliamo montare react
+        const root = createRoot(listaAnimali)
+        root.render(<ListaAnimali />)
+    </script>
+</head>
+
+<body>
+    <header>
+        <h1>I miei animali Preferiti</h1>
+    </header>
+
+    <main>
+        <figure>
+            <img src="https://picsum.photos/400/300" alt="Immagine Casuale">
+        </figure>
+        <div class="lista-animali"></div>
+    </main>
+
+    <footer>
+        <p>Creato con amore da... un collega sbadato!</p>
+    </footer>
+</body>
+
+</html>

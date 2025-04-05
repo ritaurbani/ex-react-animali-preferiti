@@ -24,6 +24,7 @@
                 <div className="modal-container">
                     <div className="modal">
                         <h2>{title}</h2>
+                        //in questo content posso passare anche un componente
                         {content}
                         <div>
                             <button onClick={onClose}>Annulla</button>
@@ -44,6 +45,8 @@
             const [animalName, setAnimalName] = useState("")
 
             const addAnimals = () => {
+                //animalName e`stato inserito? se e vuoto blocco proseguimento della funzione con return
+                if(!animalName.trim()) return;
                 setAnimals(curr => [...curr, animalName])
                 //svuoto input
                 setAnimalName("")

@@ -50,3 +50,15 @@ img{
     padding: 20px;
     border-radius: 5px;
 }
+
+.card{
+    display: flex;
+    background: lightblue;
+    padding: 20px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.card im{
+    height: 100px;
+}
